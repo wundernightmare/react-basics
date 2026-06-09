@@ -45,18 +45,54 @@ export default defineConfig({
     },
   },
   test: {
-    environment: "jsdom",
-    // storage-polyfill MUST run before setup.ts: it installs a working
-    // localStorage/sessionStorage before any Zustand `persist` store is
-    // imported (the jsdom runner otherwise hands tests a method-less `{}`).
-    setupFiles: ["./src/app/testing/storage-polyfill.ts", "./src/app/testing/setup.ts"],
-    // `*.browser.spec.*` runs in real-browser mode via vitest.browser.config.ts;
-    // keep it out of the default (jsdom) run, Stryker, and CI.
-    exclude: ["**/node_modules/**", "**/dist/**", "src/**/*.browser.spec.{ts,tsx}"],
+    // Two environments, picked by filename:
+    //   • jsdom — component/DOM tests (`*.spec.{ts,tsx}`)
+    //   • node  — pure unit + integration tests (`*.node.spec.ts`, `tests/**`)
+    // Real-browser tests live in vitest.browser.config.ts (opt-in). All three
+    // are driven by `pnpm test:run` except browser, which CI never needs.
+    projects: [
+      {
+        extends: true,
+        test: {
+          name: "jsdom",
+          environment: "jsdom",
+          // storage-polyfill MUST run before setup.ts: it installs a working
+          // localStorage/sessionStorage before any Zustand `persist` store is
+          // imported (the jsdom runner otherwise hands tests a method-less `{}`).
+          setupFiles: ["./src/app/testing/storage-polyfill.ts", "./src/app/testing/setup.ts"],
+          include: ["src/**/*.spec.{ts,tsx}"],
+          exclude: [
+            "**/node_modules/**",
+            "**/dist/**",
+            "src/**/*.browser.spec.{ts,tsx}",
+            "src/**/*.node.spec.ts",
+          ],
+        },
+      },
+      {
+        extends: true,
+        test: {
+          name: "node",
+          environment: "node",
+          setupFiles: ["./src/app/testing/setup.node.ts"],
+          // Node has no `location`, so the API client's relative "/api" base
+          // can't be resolved — give it an absolute origin for tests.
+          env: { VITE_API_URL: "http://localhost/api" },
+          include: ["src/**/*.node.spec.ts", "tests/**/*.spec.ts"],
+          exclude: ["**/node_modules/**", "**/dist/**"],
+        },
+      },
+    ],
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],
-      exclude: ["src/**/*.spec.{ts,tsx}", "src/app/testing/**", "src/locales/**", "src/main.tsx"],
+      exclude: [
+        "src/**/*.spec.{ts,tsx}",
+        "src/**/*.node.spec.ts",
+        "src/app/testing/**",
+        "src/locales/**",
+        "src/main.tsx",
+      ],
       reporter: ["text", "html", "lcov", "json-summary"],
       reportsDirectory: "coverage",
     },

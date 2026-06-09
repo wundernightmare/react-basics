@@ -17,7 +17,7 @@ wires every layer together so you can delete it and start your own.
 | State          | Zustand (persisted theme store)                                   |
 | i18n           | **Lingui** (`ru` source + `en`), SWC macro transform              |
 | Lint / format  | **oxlint** (type-aware) + **oxfmt**                               |
-| Unit tests     | **Vitest** + Testing Library + **MSW** (jsdom)                    |
+| Unit/integration | **Vitest** — `node` (pure logic) + `jsdom` (DOM) projects, **MSW** |
 | Browser tests  | **Vitest browser mode** + **Playwright** (Chromium), opt-in       |
 | Mutation tests | **Stryker**                                                       |
 | Git hooks      | lefthook (format / lint / typecheck on pre-commit)                |
@@ -78,20 +78,39 @@ live in [`AGENTS.md`](./AGENTS.md).
 
 ```bash
 pnpm check          # typecheck + lint + format:check
-pnpm test           # Vitest jsdom (watch)
-pnpm test:run       # Vitest jsdom (single run) — the CI path
-pnpm test:browser   # Vitest browser mode in real Chromium (Playwright); opt-in
-pnpm test:coverage  # jsdom + V8 coverage report
+pnpm test           # Vitest watch (node + jsdom projects)
+pnpm test:run       # Vitest single run (node + jsdom) — the CI path
+pnpm test:node      # only the node project (pure logic + integration)
+pnpm test:jsdom     # only the jsdom project (DOM/component)
+pnpm test:browser   # browser mode in real Chromium (Playwright); opt-in
+pnpm test:coverage  # node + jsdom + V8 coverage report
 pnpm test:mutation  # Stryker mutation testing
 pnpm build          # type-check + production bundle
 pnpm i18n:extract   # collect messages → src/locales/{locale}/messages.po
 pnpm i18n:compile   # compile .po → runtime messages.ts
 ```
 
+### Test environments
+
+Vitest runs two projects by filename, plus an opt-in browser project:
+
+| Env       | Files                                          | For                                              |
+| --------- | ---------------------------------------------- | ------------------------------------------------ |
+| **node**  | `*.node.spec.ts`, `tests/**/*.spec.ts`         | pure logic + integration (schemas, API ↔ MSW)    |
+| **jsdom** | `*.spec.{ts,tsx}` (not `.node`/`.browser`)     | components / anything touching the DOM            |
+| **browser** | `*.browser.spec.tsx`                         | real-browser cases (opt-in, see below)            |
+
+`pnpm test:run` runs **node + jsdom** (the CI path — no browser). The node env
+has no `location`, so the test setup gives it one (`http://localhost`) and the
+API client an absolute base, letting the same relative MSW handlers serve every
+environment. Examples: `src/entities/task/model/task.node.spec.ts` (unit),
+`tests/integration/tasks-api.spec.ts` (integration).
+
 ### Browser-mode tests
 
-Most tests run in **jsdom** — fast, and what `pnpm test` / `test:run`, coverage,
-Stryker and CI use. For the handful of cases that need a real browser (true
+The node + jsdom projects are fast and cover most cases — what `pnpm test` /
+`test:run`, coverage, Stryker and CI use. For the handful of cases that need a
+real browser (true
 layout, CSS, focus, event dispatch), name the file `*.browser.spec.tsx` and run
 it in **Chromium via Playwright**:
 
