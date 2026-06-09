@@ -1,0 +1,155 @@
+#!/usr/bin/env bash
+# wt — git-worktree helper for frontend-basics.
+#
+# Layout this manages:
+#   frontend-basics/             <- main checkout (canonical; secrets + node_modules live here)
+#   └── .worktrees/<branch>/     <- per-branch worktrees (gitignored; slashes -> dashes)
+#
+# What `git worktree add` does NOT do, and this wraps:
+#   1. trust the worktree's mise.toml (new paths aren't trusted yet)
+#   2. pnpm install — each worktree needs its own node_modules/, but deps come
+#      from the shared global store so it's fast (opt out with --no-install)
+#   3. link machine-local secrets (.env*) from the main checkout, by presence
+#      (a no-op until they exist; .env.example is tracked, so it's skipped)
+#
+# Reminders this prints (things the layout can't fix for you):
+#   - pnpm's content-addressed store is global, so installs across worktrees are
+#     cheap (hard-linked) — but each worktree still carries its own node_modules/.
+#   - the Vite dev server (5173) and the container's host port (8080) are
+#     effectively SINGLETONS: run one per host port, or override the port in a
+#     second worktree (pnpm dev -- --port 5174  /  docker run -p 8081:8080 ...).
+#
+# Usage:
+#   ./wt add <branch> [base-ref]    # base auto-detected: origin/main|origin/master|HEAD
+#   ./wt add <branch> --no-install  # skip pnpm install
+#   ./wt rm  <branch> [--force]     # remove a worktree (refuses if dirty unless --force)
+#   ./wt list
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+WT_DIR="$ROOT/.worktrees"
+MAIN="$ROOT"
+GIT() { git -C "$ROOT" "$@"; }
+
+# Machine-local, gitignored files to mirror from the main checkout into a new
+# worktree. .env.example is tracked, so it's skipped below.
+secret_globs=( ".env" ".env.*" )
+
+die() { echo "wt: $*" >&2; exit 1; }
+
+sanitize() { printf '%s' "${1//\//-}"; }   # feat/foo -> feat-foo (flat dir names)
+
+default_base() {
+  if GIT show-ref --verify --quiet refs/remotes/origin/main; then
+    echo origin/main
+  elif GIT show-ref --verify --quiet refs/remotes/origin/master; then
+    echo origin/master
+  elif GIT rev-parse --verify --quiet HEAD >/dev/null; then
+    GIT symbolic-ref --short HEAD
+  else
+    die "no commits yet — make an initial commit before creating worktrees"
+  fi
+}
+
+link_secrets() {
+  local dst="$1" rel src linked=0
+  [[ -d "$MAIN" ]] || return 0
+  shopt -s nullglob
+  for g in "${secret_globs[@]}"; do
+    for src in "$MAIN"/$g; do
+      [[ -e "$src" ]] || continue
+      rel="${src#"$MAIN"/}"
+      [[ "$rel" == ".env.example" ]] && continue
+      mkdir -p "$dst/$(dirname "$rel")"
+      if [[ ! -e "$dst/$rel" ]]; then
+        ln -s "$src" "$dst/$rel"
+        echo "  linked secret: $rel -> ../../$rel"
+        linked=1
+      fi
+    done
+  done
+  shopt -u nullglob
+  [[ "$linked" == 0 ]] && echo "  (no machine-local secrets in the main checkout to link — nothing to do)"
+}
+
+cmd_add() {
+  local branch="" base="" install=1
+  for a in "$@"; do
+    case "$a" in
+      --no-install) install=0 ;;
+      -*) die "unknown flag: $a" ;;
+      *) if [[ -z "$branch" ]]; then branch="$a"; else base="$a"; fi ;;
+    esac
+  done
+  [[ -n "$branch" ]] || die "usage: wt add <branch> [base-ref] [--no-install]"
+  [[ -n "$base" ]] || base="$(default_base)"
+
+  local dir path; dir="$(sanitize "$branch")"; path="$WT_DIR/$dir"
+  [[ -e "$path" ]] && die "path already exists: .worktrees/$dir"
+  mkdir -p "$WT_DIR"
+
+  GIT fetch --quiet origin 2>/dev/null || true
+  if GIT show-ref --verify --quiet "refs/heads/$branch"; then
+    echo "→ existing local branch '$branch'"
+    GIT worktree add "$path" "$branch"
+  elif GIT show-ref --verify --quiet "refs/remotes/origin/$branch"; then
+    echo "→ tracking remote branch 'origin/$branch'"
+    GIT worktree add "$path" --track -b "$branch" "origin/$branch"
+  else
+    echo "→ new branch '$branch' from '$base'"
+    GIT worktree add "$path" -b "$branch" "$base"
+  fi
+
+  # New worktree paths aren't trusted by mise; without this, mise-shimmed tools
+  # can fail to start with a misleading "error parsing config file".
+  if command -v mise >/dev/null; then
+    echo "trust mise config…"
+    ( cd "$path" && mise trust >/dev/null && mise install >/dev/null 2>&1 ) \
+      && echo "  mise trusted + tools installed" \
+      || echo "  mise trust failed — run 'mise trust' in .worktrees/$dir/ manually"
+  fi
+
+  echo "secrets:"
+  link_secrets "$path"
+
+  if [[ "$install" == 1 ]] && command -v pnpm >/dev/null; then
+    echo "pnpm install (shared global store)…"
+    ( cd "$path" && pnpm install ) || echo "  pnpm install failed — run it manually in .worktrees/$dir/"
+  else
+    echo "(skipped pnpm install)"
+  fi
+
+  cat <<EOF
+
+✓ worktree ready: .worktrees/$dir  (branch: $branch)
+  cd .worktrees/$dir
+  • pnpm store is global → installs are hard-linked & cheap; node_modules/ is per-worktree
+  • dev server (5173) & container host port (8080) are singletons — run one per
+    port, or override (pnpm dev -- --port 5174  /  docker run -p 8081:8080 ...)
+EOF
+}
+
+cmd_rm() {
+  local target="" force=0
+  for a in "$@"; do
+    case "$a" in
+      --force|-f) force=1 ;;
+      *) target="$a" ;;
+    esac
+  done
+  [[ -n "$target" ]] || die "usage: wt rm <branch-or-dir> [--force]"
+  local dir path; dir="$(sanitize "$target")"; path="$WT_DIR/$dir"
+  [[ -d "$path" ]] || die "no such worktree: .worktrees/$dir"
+  if [[ "$force" != 1 && -n "$(git -C "$path" status --porcelain 2>/dev/null)" ]]; then
+    die "worktree '$dir' has uncommitted changes; commit them or pass --force"
+  fi
+  GIT worktree remove ${force:+--force} "$path" 2>/dev/null || { rm -rf "$path"; GIT worktree prune; }
+  echo "✓ removed .worktrees/$dir"
+}
+
+case "${1:-}" in
+  add)        shift; cmd_add "$@" ;;
+  rm)         shift; cmd_rm "$@" ;;
+  list|ls|"") GIT worktree list ;;
+  *)          die "unknown command: $1  (use: add | rm | list)" ;;
+esac

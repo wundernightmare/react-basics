@@ -1,0 +1,39 @@
+name: cleanup
+
+# Scheduled pruning of old S3 build artifacts. Keeps the newest N builds and
+# deletes the rest (the floating "latest/" pointer is preserved). Gated on the
+# `S3_BUCKET` repo variable, same as publish — a no-op until you opt in.
+on:
+  schedule:
+    - cron: "0 3 * * 1" # Mondays 03:00 UTC
+  workflow_dispatch:
+    inputs:
+      keep:
+        description: "Number of recent builds to keep"
+        default: "10"
+      dry_run:
+        description: "List deletions without performing them"
+        type: boolean
+        default: false
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    if: vars.S3_BUCKET != ''
+    env:
+      S3_BUCKET: ${{ vars.S3_BUCKET }}
+      S3_PREFIX: ${{ vars.S3_PREFIX || 'builds' }}
+      AWS_REGION: ${{ vars.AWS_REGION || 'eu-central-1' }}
+      KEEP: ${{ github.event.inputs.keep || '10' }}
+      DRY_RUN: ${{ github.event.inputs.dry_run || 'false' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: ./scripts/s3-cleanup.sh

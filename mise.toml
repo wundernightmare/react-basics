@@ -1,0 +1,8 @@
+# mise tool versions for local development.
+#
+# Pins the toolchain so clones / CI all resolve the same binaries. Versions
+# mirror the golang-basics / rust-basics / nodejs-basics sibling repos so the
+# family drifts together.
+
+[tools]
+node = "22.15"

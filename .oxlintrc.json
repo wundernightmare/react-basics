@@ -1,0 +1,30 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "plugins": ["react", "react-hooks"],
+  "categories": {
+    "correctness": "error",
+    "suspicious": "error",
+    "pedantic": "warn",
+    "restriction": "off",
+    "style": "off",
+    "perf": "warn"
+  },
+  "options": {
+    "typeAware": true
+  },
+  "rules": {
+    "max-lines": "off",
+    "max-lines-per-function": "off",
+    "react-in-jsx-scope": "off",
+    "no-underscore-dangle": "off",
+    "react/no-unstable-nested-components": "off"
+  },
+  "overrides": [
+    {
+      "files": ["**/*.spec.{ts,tsx}", "src/app/testing/**"],
+      "rules": {
+        "unbound-method": "off"
+      }
+    }
+  ]
+}

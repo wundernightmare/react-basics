@@ -1,0 +1,19 @@
+{
+  "$schema": "./node_modules/@stryker-mutator/core/schema/stryker-schema.json",
+  "packageManager": "pnpm",
+  "reporters": ["html", "clear-text", "progress"],
+  "htmlReporter": {
+    "baseDir": "reports/mutation"
+  },
+  "testRunner": "vitest",
+  "coverageAnalysis": "perTest",
+  "plugins": ["@stryker-mutator/vitest-runner"],
+  "mutate": [
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.spec.{ts,tsx}",
+    "!src/app/testing/**",
+    "!src/locales/**",
+    "!src/main.tsx",
+    "!src/vite-env.d.ts"
+  ]
+}

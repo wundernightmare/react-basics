@@ -1,0 +1,47 @@
+name: publish
+
+# Optional artifact publishing to S3. Runs on a version tag or manual dispatch,
+# and ONLY when the repo has an `S3_BUCKET` variable configured (Settings →
+# Secrets and variables → Actions → Variables). Without it the job is skipped,
+# so the template is inert until you opt in.
+on:
+  push:
+    tags: ["v*"]
+  workflow_dispatch:
+    inputs:
+      update_latest:
+        description: "Mirror this build to <prefix>/latest/"
+        type: boolean
+        default: true
+
+permissions:
+  id-token: write # OIDC: assume the AWS role without long-lived keys
+  contents: read
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    if: vars.S3_BUCKET != ''
+    env:
+      S3_BUCKET: ${{ vars.S3_BUCKET }}
+      S3_PREFIX: ${{ vars.S3_PREFIX || 'builds' }}
+      AWS_REGION: ${{ vars.AWS_REGION || 'eu-central-1' }}
+      UPDATE_LATEST: ${{ github.event.inputs.update_latest || 'true' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+        env:
+          BUILD_ID: ${{ github.ref_name }}-${{ github.sha }}
+          GIT_COMMIT: ${{ github.sha }}
+          GIT_BRANCH: ${{ github.ref_name }}
+      - uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ vars.AWS_ROLE_ARN }}
+          aws-region: ${{ env.AWS_REGION }}
+      - run: ./scripts/s3-publish.sh

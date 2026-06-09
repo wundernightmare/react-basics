@@ -1,0 +1,91 @@
+{
+  "name": "frontend-basics",
+  "version": "0.0.1",
+  "description": "Cloneable React + Vite frontend template: FSD layers, TanStack Query, Zod-validated API client, Lingui i18n, MSW test setup, Vitest + Stryker, oxlint + oxfmt.",
+  "private": true,
+  "type": "module",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@10.33.0",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build && pnpm manifest",
+    "manifest": "node scripts/generate-manifest.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsgo -b",
+    "lint": "oxlint src --quiet",
+    "lint:fix": "oxlint --fix src",
+    "format": "oxfmt \"src/**/*.{ts,tsx,css}\" \"!src/locales/**/messages.ts\"",
+    "format:check": "oxfmt --check \"src/**/*.{ts,tsx,css}\" \"!src/locales/**/messages.ts\"",
+    "test": "vitest",
+    "test:run": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "test:mutation": "stryker run",
+    "i18n:extract": "lingui extract",
+    "i18n:compile": "lingui compile --typescript",
+    "check": "pnpm typecheck && pnpm lint && pnpm format:check",
+    "clean": "rm -rf dist coverage reports .stryker-tmp node_modules/.tmp"
+  },
+  "dependencies": {
+    "@hookform/resolvers": "5.4.0",
+    "@lingui/core": "6.1.0",
+    "@lingui/react": "6.1.0",
+    "@radix-ui/react-slot": "1.2.4",
+    "@tanstack/react-query": "5.100.14",
+    "class-variance-authority": "0.7.1",
+    "clsx": "2.1.1",
+    "lucide-react": "1.17.0",
+    "react": "19.2.6",
+    "react-dom": "19.2.6",
+    "react-hook-form": "7.76.1",
+    "react-router": "7.16.0",
+    "tailwind-merge": "3.6.0",
+    "zod": "4.4.3",
+    "zustand": "5.0.14"
+  },
+  "devDependencies": {
+    "@lingui/babel-plugin-lingui-macro": "6.1.0",
+    "@lingui/cli": "6.1.0",
+    "@lingui/conf": "6.1.0",
+    "@lingui/format-po": "6.1.0",
+    "@lingui/swc-plugin": "6.3.0",
+    "@lingui/vite-plugin": "6.1.0",
+    "@stryker-mutator/core": "9.6.1",
+    "@stryker-mutator/vitest-runner": "9.6.1",
+    "@tailwindcss/vite": "4.3.0",
+    "@testing-library/jest-dom": "6.9.1",
+    "@testing-library/react": "16.3.2",
+    "@testing-library/user-event": "14.6.1",
+    "@types/node": "25.9.1",
+    "@types/react": "19.2.15",
+    "@types/react-dom": "19.2.3",
+    "@typescript/native-preview": "7.0.0-dev.20260527.2",
+    "@vitejs/plugin-react-swc": "4.3.1",
+    "@vitest/coverage-v8": "4.1.7",
+    "jsdom": "29.1.1",
+    "lefthook": "2.1.9",
+    "msw": "2.14.6",
+    "oxfmt": "0.52.0",
+    "oxlint": "1.67.0",
+    "oxlint-tsgolint": "0.23.0",
+    "tailwindcss": "4.3.0",
+    "typescript": "6.0.3",
+    "vite": "8.0.14",
+    "vitest": "4.1.7"
+  },
+  "msw": {
+    "workerDirectory": [
+      "public"
+    ]
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": [
+      "@swc/core",
+      "esbuild",
+      "lefthook",
+      "msw"
+    ]
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

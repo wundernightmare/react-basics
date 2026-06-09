@@ -1,0 +1,165 @@
+# GitLab CI/CD — mirror of the GitHub Actions workflows in .github/workflows/.
+#
+# Pipelines:
+#   verify   — typecheck + lint + format + unit tests
+#   build    — production bundle (+ build-manifest.json), kept as an artifact
+#   build    — validate the Dockerfile with kaniko (rootless, --no-push)
+#   publish  — push dist/ to S3 on a tag / manual run        (gated on $S3_BUCKET)
+#   cleanup  — prune old S3 builds on a schedule / manual run (gated on $S3_BUCKET)
+#
+# Set CI/CD variables to opt into S3: S3_BUCKET (required), AWS_ROLE_ARN (for
+# OIDC), and optionally S3_PREFIX / AWS_DEFAULT_REGION. Without S3_BUCKET the
+# publish/cleanup jobs never run, so the pipeline is inert until you opt in.
+
+stages:
+  - verify
+  - build
+  - publish
+  - cleanup
+
+# Run on MRs, tags, schedules and branch pushes — but not a duplicate
+# branch pipeline while an MR is open for that branch.
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: "$CI_COMMIT_TAG"
+    - if: "$CI_COMMIT_BRANCH && $CI_OPEN_MERGE_REQUESTS"
+      when: never
+    - if: "$CI_COMMIT_BRANCH"
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+
+default:
+  image: node:22-slim
+  cache:
+    key:
+      files:
+        - pnpm-lock.yaml
+    paths:
+      - .pnpm-store
+
+variables:
+  # Threaded into the build manifest (see scripts/generate-manifest.mjs).
+  BUILD_ID: "${CI_COMMIT_REF_SLUG}-${CI_COMMIT_SHORT_SHA}"
+  GIT_COMMIT: "${CI_COMMIT_SHA}"
+  GIT_BRANCH: "${CI_COMMIT_REF_NAME}"
+  # S3 defaults (override via project CI/CD variables).
+  S3_PREFIX: "builds"
+  AWS_DEFAULT_REGION: "eu-central-1"
+
+# ── Shared setup ──────────────────────────────────────────────────────────────
+
+.pnpm:
+  before_script:
+    - corepack enable
+    - pnpm config set store-dir .pnpm-store
+    - pnpm install --frozen-lockfile
+
+# OIDC → AWS: assumes $AWS_ROLE_ARN using a GitLab-issued id_token, so no
+# long-lived AWS keys are stored. Falls back to ambient AWS_* vars if the role
+# ARN is not set.
+.aws_oidc:
+  image:
+    name: amazon/aws-cli:2.19.1
+    entrypoint: [""]
+  id_tokens:
+    AWS_OIDC_TOKEN:
+      aud: sts.amazonaws.com
+  before_script:
+    - |
+      if [ -n "${AWS_ROLE_ARN:-}" ]; then
+        creds=$(aws sts assume-role-with-web-identity \
+          --role-arn "$AWS_ROLE_ARN" \
+          --role-session-name "gitlab-${CI_PIPELINE_ID}" \
+          --web-identity-token "$AWS_OIDC_TOKEN" \
+          --query 'Credentials.[AccessKeyId,SecretAccessKey,SessionToken]' \
+          --output text)
+        export AWS_ACCESS_KEY_ID=$(echo "$creds" | cut -f1)
+        export AWS_SECRET_ACCESS_KEY=$(echo "$creds" | cut -f2)
+        export AWS_SESSION_TOKEN=$(echo "$creds" | cut -f3)
+      fi
+
+# CI jobs (verify/build/docker) run on code changes, never on a cleanup schedule.
+.rules_ci: &rules_ci
+  - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    when: never
+  - when: on_success
+
+# ── verify ────────────────────────────────────────────────────────────────────
+
+verify:
+  stage: verify
+  extends: .pnpm
+  rules: *rules_ci
+  script:
+    - pnpm check
+    - pnpm test:run
+
+# ── build ─────────────────────────────────────────────────────────────────────
+
+build:
+  stage: build
+  extends: .pnpm
+  rules: *rules_ci
+  script:
+    - pnpm build
+  artifacts:
+    name: "dist-$CI_COMMIT_SHORT_SHA"
+    paths:
+      - dist
+    expire_in: 1 week
+
+# Validate the Dockerfile + nginx config on every change. kaniko builds rootless
+# (no privileged runner / docker-in-docker needed); --no-push just exercises it.
+docker:
+  stage: build
+  needs: []
+  rules: *rules_ci
+  image:
+    name: gcr.io/kaniko-project/executor:v1.23.2-debug
+    entrypoint: [""]
+  script:
+    - >-
+      /kaniko/executor
+      --context "$CI_PROJECT_DIR"
+      --dockerfile "$CI_PROJECT_DIR/Dockerfile"
+      --no-push
+      --build-arg "BUILD_ID=$BUILD_ID"
+      --build-arg "GIT_COMMIT=$GIT_COMMIT"
+      --build-arg "GIT_BRANCH=$GIT_BRANCH"
+
+# ── publish (optional) ──────────────────────────────────────────────────────────
+
+publish:
+  stage: publish
+  extends: .aws_oidc
+  needs:
+    - job: build
+      artifacts: true
+  variables:
+    UPDATE_LATEST: "true"
+  rules:
+    - if: '$S3_BUCKET == ""'
+      when: never
+    - if: "$CI_COMMIT_TAG"
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+  script:
+    - ./scripts/s3-publish.sh
+
+# ── cleanup (optional) ──────────────────────────────────────────────────────────
+
+cleanup:
+  stage: cleanup
+  extends: .aws_oidc
+  needs: []
+  variables:
+    KEEP: "10"
+    DRY_RUN: "false"
+  rules:
+    - if: '$S3_BUCKET == ""'
+      when: never
+    - if: '$CI_PIPELINE_SOURCE == "schedule"'
+    - if: '$CI_PIPELINE_SOURCE == "web"'
+      when: manual
+  script:
+    - ./scripts/s3-cleanup.sh

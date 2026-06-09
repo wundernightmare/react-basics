@@ -1,0 +1,81 @@
+@import "tailwindcss";
+
+/* Enable class-based dark mode (`<html class="dark">`). */
+@custom-variant dark (&:is(.dark *));
+
+/*
+ * Design tokens — a small shadcn-style palette in OKLCH. `:root` is the light
+ * theme; `.dark` overrides. The `@theme inline` block below bridges these CSS
+ * variables to Tailwind utilities (bg-background, text-foreground, …).
+ */
+:root {
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.21 0.006 285.9);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.21 0.006 285.9);
+  --primary: oklch(0.55 0.22 263);
+  --primary-foreground: oklch(0.98 0.003 247.9);
+  --muted: oklch(0.967 0.001 286.4);
+  --muted-foreground: oklch(0.55 0.014 285.9);
+  --border: oklch(0.92 0.004 286.3);
+  --input: oklch(0.92 0.004 286.3);
+  --ring: oklch(0.55 0.22 263);
+  --destructive: oklch(0.58 0.24 28.5);
+  --destructive-foreground: oklch(0.98 0.003 247.9);
+  --radius: 0.625rem;
+}
+
+.dark {
+  --background: oklch(0.18 0.006 285.9);
+  --foreground: oklch(0.98 0.003 247.9);
+  --card: oklch(0.21 0.006 285.9);
+  --card-foreground: oklch(0.98 0.003 247.9);
+  --primary: oklch(0.62 0.19 260);
+  --primary-foreground: oklch(0.21 0.006 285.9);
+  --muted: oklch(0.27 0.006 286);
+  --muted-foreground: oklch(0.71 0.013 286.1);
+  --border: oklch(1 0 0 / 12%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.62 0.19 260);
+  --destructive: oklch(0.62 0.21 25.8);
+  --destructive-foreground: oklch(0.98 0.003 247.9);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+}
+
+* {
+  border-color: var(--border);
+}
+
+body {
+  margin: 0;
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family:
+    ui-sans-serif,
+    system-ui,
+    -apple-system,
+    "Segoe UI",
+    Roboto,
+    Helvetica,
+    Arial,
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+}
