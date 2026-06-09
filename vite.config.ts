@@ -50,7 +50,9 @@ export default defineConfig({
     // localStorage/sessionStorage before any Zustand `persist` store is
     // imported (the jsdom runner otherwise hands tests a method-less `{}`).
     setupFiles: ["./src/app/testing/storage-polyfill.ts", "./src/app/testing/setup.ts"],
-    exclude: ["**/node_modules/**", "**/dist/**"],
+    // `*.browser.spec.*` runs in real-browser mode via vitest.browser.config.ts;
+    // keep it out of the default (jsdom) run, Stryker, and CI.
+    exclude: ["**/node_modules/**", "**/dist/**", "src/**/*.browser.spec.{ts,tsx}"],
     coverage: {
       provider: "v8",
       include: ["src/**/*.{ts,tsx}"],

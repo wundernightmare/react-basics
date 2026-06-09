@@ -26,3 +26,7 @@ pnpm-debug.log*
 
 # git worktrees created by ./wt
 .worktrees/
+
+# vitest browser-mode artifacts (failure screenshots / attachments)
+.vitest-attachments/
+__screenshots__/

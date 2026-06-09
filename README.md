@@ -18,6 +18,7 @@ wires every layer together so you can delete it and start your own.
 | i18n           | **Lingui** (`ru` source + `en`), SWC macro transform              |
 | Lint / format  | **oxlint** (type-aware) + **oxfmt**                               |
 | Unit tests     | **Vitest** + Testing Library + **MSW** (jsdom)                    |
+| Browser tests  | **Vitest browser mode** + **Playwright** (Chromium), opt-in       |
 | Mutation tests | **Stryker**                                                       |
 | Git hooks      | lefthook (format / lint / typecheck on pre-commit)                |
 
@@ -77,14 +78,34 @@ live in [`AGENTS.md`](./AGENTS.md).
 
 ```bash
 pnpm check          # typecheck + lint + format:check
-pnpm test           # Vitest (watch)
-pnpm test:run       # Vitest (single run)
-pnpm test:coverage  # + V8 coverage report
+pnpm test           # Vitest jsdom (watch)
+pnpm test:run       # Vitest jsdom (single run) — the CI path
+pnpm test:browser   # Vitest browser mode in real Chromium (Playwright); opt-in
+pnpm test:coverage  # jsdom + V8 coverage report
 pnpm test:mutation  # Stryker mutation testing
 pnpm build          # type-check + production bundle
 pnpm i18n:extract   # collect messages → src/locales/{locale}/messages.po
 pnpm i18n:compile   # compile .po → runtime messages.ts
 ```
+
+### Browser-mode tests
+
+Most tests run in **jsdom** — fast, and what `pnpm test` / `test:run`, coverage,
+Stryker and CI use. For the handful of cases that need a real browser (true
+layout, CSS, focus, event dispatch), name the file `*.browser.spec.tsx` and run
+it in **Chromium via Playwright**:
+
+```bash
+pnpm exec playwright install chromium   # one-time, ~150 MB
+pnpm test:browser                       # runs src/**/*.browser.spec.tsx
+```
+
+These live in a separate config (`vitest.browser.config.ts`) and are **opt-in**:
+the default jsdom run excludes `*.browser.spec.*`, so CI stays browser-free and
+never downloads Chromium. Browser specs render with
+[`vitest-browser-react`](https://github.com/vitest-dev/vitest-browser-react)
+(`render` + retry-able locators + `expect.element`) — see
+`src/shared/ui/button.browser.spec.tsx`.
 
 ## Container & deployment
 

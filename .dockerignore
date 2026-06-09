@@ -13,3 +13,5 @@ Dockerfile
 .dockerignore
 README.md
 .worktrees
+.vitest-attachments
+__screenshots__

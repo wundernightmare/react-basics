@@ -38,8 +38,9 @@ pnpm dev                # Vite dev server → http://localhost:5173
 VITE_ENABLE_MOCKS=true pnpm dev   # run fully against MSW, no backend
 
 pnpm check              # typecheck (tsgo) + oxlint + oxfmt --check  ← gate before commit
-pnpm test:run           # Vitest (single run)
-pnpm test:coverage      # + v8 coverage → coverage/
+pnpm test:run           # Vitest jsdom (single run) — the default/CI path
+pnpm test:browser       # Vitest browser mode in real Chromium (Playwright), opt-in
+pnpm test:coverage      # jsdom + v8 coverage → coverage/
 pnpm test:mutation      # Stryker
 pnpm build              # tsc -b + vite build + build-manifest.json
 pnpm format             # apply oxfmt (fixes what format:check flags)
@@ -73,7 +74,10 @@ layers may only import from layers below them (pages→widgets→features→enti
   and commit `src/locales/` when strings change.
 - **Tests use `renderWithProviders`** (`app/testing/render.tsx`) and the MSW
   handlers + in-memory `db` (`app/testing/mocks`); `db.reset()` + `cleanup()`
-  run in `afterEach`. Don't hit a real network in tests.
+  run in `afterEach`. Don't hit a real network in tests. For the rare test that
+  needs a real browser, name it `*.browser.spec.tsx` (runs in Chromium via
+  `pnpm test:browser`, rendered with `vitest-browser-react`) — it's excluded
+  from the default jsdom run.
 - **`pnpm check` must pass** before committing. oxfmt owns formatting — run
   `pnpm format`, don't hand-format.
 - **Never commit secrets.** `.env*` are gitignored and symlinked into worktrees
