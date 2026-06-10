@@ -1,29 +1,31 @@
 # AGENTS.md — working in frontend-basics
 
 Guidance for AI coding agents (and humans skimming for the fast path). This is a
-**worktree-oriented** repo: do isolated work in its own git worktree, not by
-hot-swapping branches under the main checkout.
+**worktree-oriented** repo cloned as a bare-repo container: do isolated work in
+its own git worktree (a flat sibling dir), not by hot-swapping branches in place.
 
 ## Worktrees first
 
-The main checkout is the canonical tree (it holds your `node_modules/` and any
-machine-local `.env*`). For any branch of work, create a dedicated worktree with
-the `./wt` helper instead of `git checkout`-ing in place — parallel tasks then
-never clobber each other's working tree, dev server, or install state.
+This is a **bare-repo container**: `frontend-basics/{.bare, master, <branch>…}`.
+`.bare` is the git dir, `master/` is the canonical worktree (it holds any
+machine-local `.env*`), and each branch of work is a flat sibling dir. Create
+one with the `./wt` helper (at the container root) instead of `git checkout`-ing
+in place — parallel tasks then never clobber each other's tree, dev server, or
+install state. See README "Worktrees" for the one-time container clone.
 
 ```sh
-./wt add feat/x            # new worktree at .worktrees/feat-x (branch feat/x)
+./wt add feat/x            # new worktree at ./feat-x (branch feat/x)
                            #   → trusts mise, runs pnpm install, links .env*
 ./wt add feat/x --no-install
 ./wt list                  # all worktrees
 ./wt rm  feat/x            # remove (refuses if dirty; --force to override)
-cd .worktrees/feat-x       # then work here
+cd feat-x                  # then work here
 ```
 
-Worktrees live under `.worktrees/` (gitignored). What `./wt` wires up that a
-plain `git worktree add` does not: `mise trust` + tool install, `pnpm install`
-(own `node_modules/`, but deps hard-link from the shared global store, so it's
-cheap), and symlinking machine-local secrets from the main checkout.
+Worktrees are flat siblings of `master/` under the container root. What `./wt`
+wires up that a plain `git worktree add` does not: `mise trust` + tool install,
+`pnpm install` (own `node_modules/`, but deps hard-link from the shared global
+store, so it's cheap), and symlinking machine-local secrets from `master/`.
 
 **Singletons to respect:** the Vite dev server (`5173`) and the container host
 port (`8080`) are shared across worktrees — run one per host port, or override

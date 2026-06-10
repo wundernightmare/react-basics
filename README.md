@@ -54,23 +54,36 @@ VITE_ENABLE_MOCKS=true pnpm dev   # run fully against MSW — no backend needed
 
 ## Worktrees
 
-This repo is meant to be worked **one branch per git worktree** — parallel tasks
-then never fight over the same working tree, dev server, or install state. The
-`./wt` helper wraps the per-worktree setup `git worktree add` skips (mise trust,
-`pnpm install` from the shared global store, symlinking machine-local `.env*`):
+This repo is cloned as a **bare-repo container** so each branch is a clean
+sibling checkout — parallel tasks then never fight over the same working tree,
+dev server, or install state. (Don't nest worktrees inside a live checkout, or
+tooling scans every branch's `node_modules`.)
 
 ```bash
-./wt add feat/x            # → .worktrees/feat-x on branch feat/x, fully set up
+# one-time container
+git clone --bare git@github.com:wundernightmare/react-basics.git frontend-basics/.bare
+cd frontend-basics && echo 'gitdir: ./.bare' > .git
+git --git-dir=.bare config remote.origin.fetch '+refs/heads/*:refs/remotes/origin/*'
+git fetch origin
+git worktree add master master
+cp master/wt ./wt && chmod +x ./wt   # the wt helper lives at the container root
+
+# per branch — the `wt` helper wraps the setup git worktree add skips:
+./wt add feat/x            # → ./feat-x on branch feat/x, fully set up
 ./wt add feat/x --no-install
 ./wt list                  # list worktrees
 ./wt rm  feat/x            # remove (refuses if dirty; --force to override)
-cd .worktrees/feat-x       # work here
+cd feat-x                  # work here
 ```
 
-Worktrees live under `.worktrees/` (gitignored). The pnpm store is global, so a
-new worktree's `pnpm install` is hard-linked and fast — but each worktree keeps
-its own `node_modules/`. The Vite dev server (`5173`) and the container host
-port (`8080`) are shared across worktrees: run one per port, or override
+The layout is `frontend-basics/{.bare, master, <branch>…}` — `.bare` is the git
+dir, `master/` the canonical worktree (machine-local `.env*` live here), and
+each branch is a flat sibling. What `./wt` wires up that `git worktree add`
+skips: `mise trust`, `pnpm install` from the shared global store, and symlinking
+machine-local `.env*` from `master/`. The pnpm store is global, so a new
+worktree's install is hard-linked and fast — but each worktree keeps its own
+`node_modules/`. The Vite dev server (`5173`) and the container host port
+(`8080`) are shared across worktrees: run one per port, or override
 (`pnpm dev -- --port 5174`, `docker run -p 8081:8080`). Agent-oriented notes
 live in [`AGENTS.md`](./AGENTS.md).
 
