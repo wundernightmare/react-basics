@@ -5,6 +5,9 @@ reports
 .stryker-tmp
 .git
 .github
+.env
+.env.*
+*.local
 *.log
 .vscode
 .idea

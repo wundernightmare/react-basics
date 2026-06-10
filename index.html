@@ -4,31 +4,9 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Frontend Basics</title>
-    <script>
-      // Apply the theme synchronously, before the body parses, to avoid a flash
-      // of the wrong colour scheme on first paint. Reads the same `fb-theme`
-      // localStorage key the Zustand store persists to (`shared/model/theme.ts`).
-      (function () {
-        try {
-          var raw = localStorage.getItem("fb-theme");
-          var mode = "system";
-          if (raw) {
-            var parsed = JSON.parse(raw);
-            if (parsed && parsed.state && typeof parsed.state.mode === "string") {
-              mode = parsed.state.mode;
-            }
-          }
-          var effective = mode;
-          if (mode === "system") {
-            effective = window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light";
-          }
-          if (effective === "dark") document.documentElement.classList.add("dark");
-          document.documentElement.style.colorScheme = effective;
-        } catch (e) {
-          // localStorage unavailable / disabled — fall back to OS default.
-        }
-      })();
-    </script>
+    <!-- Render-blocking, same-origin theme init (kept external, not inline, so a
+         strict `script-src 'self'` CSP needs no nonce/hash). See public/theme-init.js. -->
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

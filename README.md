@@ -128,9 +128,9 @@ never downloads Chromium. Browser specs render with
 
 ## Container & deployment
 
-A two-stage `Dockerfile` builds the bundle (node 22 + pnpm) and serves it from a
+A two-stage `Dockerfile` builds the bundle (node 24 + pnpm) and serves it from a
 minimal, **non-root** `nginx-unprivileged` image (~52 MB) with SPA fallback,
-gzip, long-cache for hashed assets, security headers and a `/healthz` probe.
+gzip, long-cache for hashed assets and a `/healthz` probe.
 
 ```bash
 just docker-build           # tag frontend-basics:local
@@ -139,6 +139,29 @@ just docker-run             # → http://localhost:8080
 docker build --build-arg BUILD_ID=... -t frontend-basics .
 docker run --rm -p 8080:8080 frontend-basics
 ```
+
+### Hardening
+
+Baked into the image: runs as **uid 101** (no root, no Linux caps needed —
+binds 8080), `server_tokens off`, only `GET`/`HEAD` accepted, dotfiles denied,
+and a full set of response headers — a strict **CSP** (`script-src 'self'`; the
+theme init is an external `public/theme-init.js`, so no inline-script allowance
+is needed), `Permissions-Policy`, COOP/CORP, `X-Content-Type-Options`,
+`X-Frame-Options`, `Referrer-Policy` (HSTS is provided commented — enable it at
+your TLS edge). See `docker/nginx.conf` + `docker/security-headers.conf`.
+
+Run it locked down (read-only rootfs, no caps, no privilege escalation):
+
+```bash
+docker run --rm -p 8080:8080 \
+  --read-only --tmpfs /tmp --tmpfs /var/cache/nginx \
+  --cap-drop ALL --security-opt no-new-privileges \
+  frontend-basics
+```
+
+Still worth adding for a production posture: pin the base image by digest
+(Renovate-managed), and scan the built image for CVEs + emit an SBOM
+(grype/syft) — part of the AppSec toolchain the sibling repos carry.
 
 ### Build manifest
 
