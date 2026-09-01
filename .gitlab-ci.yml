@@ -29,7 +29,7 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 
 default:
-  image: node:24-slim
+  image: node:26-slim
   cache:
     key:
       files:
@@ -50,7 +50,7 @@ variables:
 
 .pnpm:
   before_script:
-    - corepack enable
+    - npm install -g corepack@latest && corepack enable
     - pnpm config set store-dir .pnpm-store
     - pnpm install --frozen-lockfile
 

@@ -141,7 +141,7 @@ never downloads Chromium. Browser specs render with
 
 ## Container & deployment
 
-A two-stage `Dockerfile` builds the bundle (node 24 + pnpm) and serves it from a
+A two-stage `Dockerfile` builds the bundle (node 26 + pnpm) and serves it from a
 minimal, **non-root** `nginx-unprivileged` image (~52 MB) with SPA fallback,
 gzip, long-cache for hashed assets and a `/healthz` probe.
 

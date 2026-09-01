@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ── Stage 1: build the static bundle ──────────────────────────────────────────
-FROM node:24-slim AS builder
+FROM node:26-slim AS builder
 WORKDIR /app
 ENV CI=true
 
@@ -11,11 +11,14 @@ ARG GIT_COMMIT
 ARG GIT_BRANCH
 ENV BUILD_ID=${BUILD_ID} GIT_COMMIT=${GIT_COMMIT} GIT_BRANCH=${GIT_BRANCH}
 
-# Corepack pins pnpm to the version in package.json#packageManager.
-RUN corepack enable
+# Corepack pins pnpm to the version in package.json#packageManager. Node 26 no
+# longer ships it, so install it explicitly.
+RUN npm install -g corepack@latest && corepack enable
 
-# Install deps first (cached until the lockfile changes).
-COPY package.json pnpm-lock.yaml ./
+# Install deps first (cached until the lockfile changes). pnpm-workspace.yaml
+# carries the pnpm 11 settings (allowBuilds) — without it the install fails on
+# unapproved build scripts.
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
     pnpm install --frozen-lockfile
 
@@ -24,7 +27,7 @@ COPY . .
 RUN pnpm build
 
 # ── Stage 2: serve with nginx (unprivileged, non-root) ────────────────────────
-FROM nginxinc/nginx-unprivileged:1.27-alpine AS runtime
+FROM nginxinc/nginx-unprivileged:1.31-alpine AS runtime
 
 # Replace the default server block with our SPA-aware config + header snippet.
 COPY docker/nginx.conf /etc/nginx/conf.d/default.conf
