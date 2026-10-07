@@ -9,3 +9,9 @@ allowBuilds:
   esbuild: true
   lefthook: true
   msw: true
+
+# Transitive CVEs pinned out, as caret floors (`pnpm update` still moves them
+# inside the major). Drop an entry once `pnpm why <name>` shows the dependents
+# already require the floor.
+overrides:
+  source-map-js: ^1.2.2 # GHSA-68fv-2mgg-jv7q via vite/postcss
