@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ── Stage 1: build the static bundle ──────────────────────────────────────────
-FROM node:26-slim AS builder
+FROM node:24-trixie-slim AS builder
 WORKDIR /app
 ENV CI=true
 
@@ -11,12 +11,13 @@ ARG GIT_COMMIT
 ARG GIT_BRANCH
 ENV BUILD_ID=${BUILD_ID} GIT_COMMIT=${GIT_COMMIT} GIT_BRANCH=${GIT_BRANCH}
 
-# Corepack pins pnpm to the version in package.json#packageManager. Node 26 no
-# longer ships it, so install it explicitly.
+# Corepack pins pnpm to the version in package.json#packageManager. The copy
+# bundled with Node 24 predates pnpm 12 (and Node 25+ drops it), so install the
+# latest one explicitly.
 RUN npm install -g corepack@latest && corepack enable
 
 # Install deps first (cached until the lockfile changes). pnpm-workspace.yaml
-# carries the pnpm 11 settings (allowBuilds) — without it the install fails on
+# carries the pnpm settings (allowBuilds) — without it the install fails on
 # unapproved build scripts.
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN --mount=type=cache,id=pnpm,target=/root/.local/share/pnpm/store \
