@@ -15,7 +15,7 @@ async function bootstrap() {
 
   if (enableMocks) {
     const { worker } = await import("@app/testing/mocks/worker");
-    await worker.start({ quiet: true, onUnhandledRequest: "bypass" });
+    await worker.start({ quiet: true, onUnhandledFrame: "bypass" });
   }
 
   createRoot(root!).render(

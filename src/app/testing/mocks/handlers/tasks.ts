@@ -1,4 +1,4 @@
-import { HttpResponse, http } from "msw";
+import { HttpResponse, http } from "msw/http";
 import { z } from "zod";
 
 import { type Task, TaskCreateSchema, TaskSchema, TaskUpdateSchema } from "@entities/task";
