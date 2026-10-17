@@ -21,11 +21,11 @@ if (typeof globalThis.matchMedia === "undefined") {
 }
 
 /**
- * Start the MSW server once before the suite. `onUnhandledRequest: "warn"`
+ * Start the MSW server once before the suite. `onUnhandledFrame: "warn"`
  * surfaces typos (a request with no handler) without failing the test.
  */
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: "warn" });
+  server.listen({ onUnhandledFrame: "warn" });
 });
 
 /** Unmount React trees + reset db / handler overrides after each test. */

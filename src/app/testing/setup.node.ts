@@ -22,7 +22,7 @@ if (typeof globalThis.location === "undefined") {
 // the in-memory db, reset between tests for full isolation.
 
 beforeAll(() => {
-  server.listen({ onUnhandledRequest: "warn" });
+  server.listen({ onUnhandledFrame: "warn" });
 });
 
 afterEach(() => {

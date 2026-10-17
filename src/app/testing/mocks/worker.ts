@@ -11,7 +11,8 @@ export const handlers = [...tasksHandlers];
 /**
  * MSW browser worker. Started from `main.tsx` when `VITE_ENABLE_MOCKS=true`.
  *
- * ⚠️  Requires `public/mockServiceWorker.js`. Generate it once with:
- *     pnpm dlx msw init public/ --save
+ * ⚠️  Requires `public/mockServiceWorker.js` (committed). MSW 3 has no
+ *     postinstall hook, so regenerate it after bumping `msw`:
+ *     pnpm exec msw init
  */
 export const worker = setupWorker(...handlers);

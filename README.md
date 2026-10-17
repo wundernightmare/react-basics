@@ -49,8 +49,9 @@ pnpm dev                     # http://localhost:5173 (proxies /api → VITE_API_
 VITE_ENABLE_MOCKS=true pnpm dev   # run fully against MSW — no backend needed
 ```
 
-> For browser mocking, generate the worker script once:
-> `pnpm dlx msw init public/ --save`
+> Browser mocking uses the committed `public/mockServiceWorker.js`. MSW 3 has no
+> postinstall hook any more, so after bumping `msw` regenerate it with the pinned
+> version: `pnpm exec msw init` (reads `msw.workerDirectory` from package.json).
 
 ## Worktrees
 

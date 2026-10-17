@@ -1,14 +1,13 @@
 # pnpm 11 no longer reads the `pnpm` field in package.json — settings live here.
 # It also turns an ignored build script into a hard install failure, so every
 # postinstall we actually want has to be approved explicitly: @swc/core and
-# esbuild fetch platform binaries, msw writes the service worker into public/,
-# lefthook installs the git hook runner (hooks themselves stay opt-in — see
-# lefthook.yml).
+# esbuild fetch platform binaries, lefthook installs the git hook runner
+# (hooks themselves stay opt-in — see lefthook.yml). msw 3 dropped its
+# postinstall, so it needs no entry (see README for regenerating the worker).
 allowBuilds:
   '@swc/core': true
   esbuild: true
   lefthook: true
-  msw: true
 
 # Transitive CVEs pinned out, as caret floors (`pnpm update` still moves them
 # inside the major). Drop an entry once `pnpm why <name>` shows the dependents
