@@ -14,3 +14,6 @@ allowBuilds:
 # already require the floor.
 overrides:
   source-map-js: ^1.2.2 # GHSA-68fv-2mgg-jv7q via vite/postcss
+  fast-uri: ^3.1.9      # GHSA-w74x / wjr9 / 333x / xhq7 via ajv → @hookform/resolvers
+  qs: ^6.16.0           # GHSA-4mjr / x5fp / q8mj via @stryker-mutator → typed-rest-client
+  undici: ^8.12.2       # GHSA-xjj6 / 4qv8 / f72v via jsdom
