@@ -29,19 +29,17 @@ DEST="s3://$S3_BUCKET/$PREFIX/$BUILD_ID"
 
 echo "→ publishing $DIST → $DEST"
 
-# 1) Hashed, immutable assets: cache for a year.
-aws s3 sync "$DIST" "$DEST" \
-  --no-progress \
-  --exclude "*.html" \
-  --exclude "build-manifest.json" \
-  --cache-control "public, max-age=31536000, immutable"
-
-# 2) Entry point + manifest: always revalidate.
+# 1) Content-addressed assets: cache for a year.
 aws s3 sync "$DIST" "$DEST" \
   --no-progress \
   --exclude "*" \
-  --include "*.html" \
-  --include "build-manifest.json" \
+  --include "assets/*" \
+  --cache-control "public, max-age=31536000, immutable"
+
+# 2) Entry point, manifest and fixed-name public files: always revalidate.
+aws s3 sync "$DIST" "$DEST" \
+  --no-progress \
+  --exclude "assets/*" \
   --cache-control "no-cache"
 
 if [ "${UPDATE_LATEST:-false}" = "true" ]; then

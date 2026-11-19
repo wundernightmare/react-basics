@@ -11,6 +11,20 @@ export const LOCALE_NAMES: Record<SupportedLocale, string> = {
 
 const LOCALE_STORAGE_KEY = "fb-locale";
 
+function readStoredLocale(): string | null {
+  try {
+    return localStorage.getItem(LOCALE_STORAGE_KEY);
+  } catch {
+    return null;
+  }
+}
+
+function storeLocale(locale: SupportedLocale): void {
+  try {
+    localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  } catch {}
+}
+
 /**
  * Vite-resolved catalog map — only the requested locale is loaded at runtime.
  * The glob pattern is statically analysed by Vite for code-splitting. The
@@ -37,7 +51,7 @@ export async function loadCatalog(locale: string): Promise<void> {
 
 /** Detect the best initial locale. Priority: localStorage → navigator → "ru". */
 export function detectLocale(): SupportedLocale {
-  const stored = localStorage.getItem(LOCALE_STORAGE_KEY);
+  const stored = readStoredLocale();
   if (stored && (SUPPORTED_LOCALES as readonly string[]).includes(stored)) {
     return stored as SupportedLocale;
   }
@@ -55,7 +69,7 @@ export function detectLocale(): SupportedLocale {
 
 /** Persist the locale choice and (re)load its catalog. */
 export async function changeLocale(locale: SupportedLocale): Promise<void> {
-  localStorage.setItem(LOCALE_STORAGE_KEY, locale);
+  storeLocale(locale);
   document.documentElement.lang = locale;
   await loadCatalog(locale);
 }

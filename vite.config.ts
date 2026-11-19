@@ -1,25 +1,13 @@
+import linguiMacro from "@lingui/babel-plugin-lingui-macro";
 import { lingui } from "@lingui/vite-plugin";
+import babel from "@rolldown/plugin-babel";
 import tailwindcss from "@tailwindcss/vite";
-import react from "@vitejs/plugin-react-swc";
-import { createRequire } from "module";
+import react from "@vitejs/plugin-react";
 import { resolve } from "path";
 import { defineConfig } from "vitest/config";
 
-// pnpm doesn't hoist @lingui/swc-plugin next to @vitejs/plugin-react-swc, so
-// resolve the plugin path from this package and pass an absolute id.
-const linguiSwcPlugin = createRequire(import.meta.url).resolve("@lingui/swc-plugin");
-
 export default defineConfig({
-  plugins: [
-    react({
-      plugins: [[linguiSwcPlugin, {}]],
-    }),
-    lingui(),
-    tailwindcss(),
-  ],
-  build: {
-    sourcemap: true,
-  },
+  plugins: [babel({ plugins: [linguiMacro] }), react(), lingui(), tailwindcss()],
   resolve: {
     alias: {
       "@": resolve(import.meta.dirname, "src"),
@@ -40,7 +28,7 @@ export default defineConfig({
       "/api": {
         target: process.env.VITE_API_TARGET ?? "http://localhost:3000",
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api/, ""),
+        rewrite: (path) => path.replace(/^\/api/u, ""),
       },
     },
   },

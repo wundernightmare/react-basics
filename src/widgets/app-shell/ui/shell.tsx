@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Languages, Moon, Sun } from "lucide-react";
 import { NavLink, Outlet } from "react-router";
 
@@ -9,6 +9,7 @@ import { PATHS } from "@shared/routing";
 import { Button } from "@shared/ui";
 
 function ThemeToggle() {
+  const { t } = useLingui();
   const mode = useThemeStore((s) => s.mode);
   const setMode = useThemeStore((s) => s.setMode);
   const isDark = resolveTheme(mode) === "dark";
@@ -17,7 +18,7 @@ function ThemeToggle() {
     <Button
       variant="ghost"
       size="icon"
-      aria-label="toggle theme"
+      aria-label={t`Переключить тему`}
       onClick={() => setMode(isDark ? "light" : "dark")}
     >
       {isDark ? <Sun className="size-4" /> : <Moon className="size-4" />}
@@ -26,12 +27,13 @@ function ThemeToggle() {
 }
 
 function LocaleSwitch() {
+  const { t } = useLingui();
   const next: SupportedLocale = detectLocale() === "ru" ? "en" : "ru";
   return (
     <Button
       variant="ghost"
       size="sm"
-      aria-label="switch language"
+      aria-label={t`Сменить язык`}
       onClick={() => void changeLocale(next)}
     >
       <Languages className="size-4" />

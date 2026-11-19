@@ -1,4 +1,4 @@
-import { Trans } from "@lingui/react/macro";
+import { Trans, useLingui } from "@lingui/react/macro";
 import { Check, RotateCcw, Trash2 } from "lucide-react";
 
 import type { Task } from "@entities/task/model/task";
@@ -18,6 +18,7 @@ interface Props {
  * parent via callbacks so the entity stays free of data-fetching concerns.
  */
 export function TaskItem({ task, onToggle, onDelete, busy = false }: Props) {
+  const { t } = useLingui();
   const isDone = task.status === "done";
 
   return (
@@ -33,7 +34,7 @@ export function TaskItem({ task, onToggle, onDelete, busy = false }: Props) {
         size="sm"
         disabled={busy}
         onClick={() => onToggle(task)}
-        aria-label={isDone ? "reopen" : "complete"}
+        aria-label={isDone ? t`Вернуть задачу` : t`Выполнить задачу`}
       >
         {isDone ? <RotateCcw className="size-4" /> : <Check className="size-4" />}
         {isDone ? <Trans>Вернуть</Trans> : <Trans>Готово</Trans>}
@@ -44,7 +45,7 @@ export function TaskItem({ task, onToggle, onDelete, busy = false }: Props) {
         size="icon"
         disabled={busy}
         onClick={() => onDelete(task)}
-        aria-label="delete"
+        aria-label={t`Удалить задачу`}
       >
         <Trash2 className="size-4" />
       </Button>

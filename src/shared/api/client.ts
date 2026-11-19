@@ -4,7 +4,7 @@ import { z } from "zod";
 // backend, and the MSW handlers register on the same prefix. In production a
 // `VITE_API_URL` injects the absolute API origin at build time. The trailing
 // slash is stripped so callers compose `${BASE_URL}/tasks` cleanly.
-export const BASE_URL = (import.meta.env.VITE_API_URL ?? "/api").replace(/\/$/, "");
+export const BASE_URL = (import.meta.env.VITE_API_URL ?? "/api").replace(/\/$/u, "");
 
 // ─── Error type ────────────────────────────────────────────────────────────────
 

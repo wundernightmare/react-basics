@@ -15,16 +15,24 @@ msgstr "Vite + React, Feature-Sliced Design layers, TanStack Query, Zod-validate
 msgid "В работе"
 msgstr "In progress"
 
-#: src/entities/task/ui/task-item.tsx:39
+#: src/entities/task/ui/task-item.tsx:40
 msgid "Вернуть"
 msgstr "Reopen"
 
-#: src/widgets/app-shell/ui/shell.tsx:59
+#: src/entities/task/ui/task-item.tsx:37
+msgid "Вернуть задачу"
+msgstr "Reopen task"
+
+#: src/entities/task/ui/task-item.tsx:37
+msgid "Выполнить задачу"
+msgstr "Complete task"
+
+#: src/widgets/app-shell/ui/shell.tsx:61
 msgid "Главная"
 msgstr "Home"
 
 #: src/entities/task/ui/status-badge.tsx:22
-#: src/entities/task/ui/task-item.tsx:39
+#: src/entities/task/ui/task-item.tsx:40
 msgid "Готово"
 msgstr "Done"
 
@@ -37,7 +45,7 @@ msgid "Загрузка…"
 msgstr "Loading…"
 
 #: src/pages/tasks/index.tsx:27
-#: src/widgets/app-shell/ui/shell.tsx:62
+#: src/widgets/app-shell/ui/shell.tsx:64
 msgid "Задачи"
 msgstr "Tasks"
 
@@ -45,7 +53,7 @@ msgstr "Tasks"
 msgid "К выполнению"
 msgstr "To do"
 
-#: src/app/router/route-error-fallback.tsx:28
+#: src/app/router/route-error-fallback.tsx:30
 #: src/pages/not-found/index.tsx:16
 msgid "На главную"
 msgstr "Back home"
@@ -57,6 +65,10 @@ msgstr "Task title"
 #: src/pages/home/index.tsx:27
 msgid "Перейти к задачам"
 msgstr "Go to tasks"
+
+#: src/widgets/app-shell/ui/shell.tsx:21
+msgid "Переключить тему"
+msgstr "Toggle theme"
 
 #: src/pages/tasks/index.tsx:44
 msgid "Повторить"
@@ -70,9 +82,17 @@ msgstr "No tasks yet — add the first one."
 msgid "Пример CRUD: данные приходят из MSW-моков в режиме разработки и тестов."
 msgstr "A CRUD example: data comes from MSW mocks in development and tests."
 
+#: src/widgets/app-shell/ui/shell.tsx:36
+msgid "Сменить язык"
+msgstr "Switch language"
+
 #: src/pages/not-found/index.tsx:12
 msgid "Страница не найдена"
 msgstr "Page not found"
+
+#: src/entities/task/ui/task-item.tsx:48
+msgid "Удалить задачу"
+msgstr "Delete task"
 
 #: src/features/create-task/ui/create-task-form.tsx:38
 msgid "Что нужно сделать?"

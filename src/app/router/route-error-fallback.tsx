@@ -22,7 +22,9 @@ export function RouteErrorFallback() {
       <h1 className="text-2xl font-semibold tracking-tight">
         <Trans>Что-то пошло не так</Trans>
       </h1>
-      <p className="max-w-md text-sm text-muted-foreground">{detail}</p>
+      {import.meta.env.DEV ? (
+        <p className="max-w-md text-sm text-muted-foreground">{detail}</p>
+      ) : null}
       <Button asChild variant="outline">
         <Link to={PATHS.root}>
           <Trans>На главную</Trans>

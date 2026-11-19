@@ -11,10 +11,9 @@ ARG GIT_COMMIT
 ARG GIT_BRANCH
 ENV BUILD_ID=${BUILD_ID} GIT_COMMIT=${GIT_COMMIT} GIT_BRANCH=${GIT_BRANCH}
 
-# Corepack pins pnpm to the version in package.json#packageManager. The copy
-# bundled with Node 24 predates pnpm 12 (and Node 25+ drops it), so install the
-# latest one explicitly.
-RUN npm install -g corepack@latest && corepack enable
+# Corepack pins pnpm to the version in package.json#packageManager. Node 25+
+# no longer bundles it, so install the pinned release explicitly.
+RUN npm install -g corepack@0.36.0 && corepack enable
 
 # Install deps first (cached until the lockfile changes). pnpm-workspace.yaml
 # carries the pnpm settings (allowBuilds) — without it the install fails on

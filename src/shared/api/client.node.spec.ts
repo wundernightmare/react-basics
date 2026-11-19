@@ -21,7 +21,7 @@ describe("api client", () => {
 
   it("throws when the response does not match the Zod schema", async () => {
     server.use(http.get("/api/test-bad", () => HttpResponse.json({ unexpected: "shape" })));
-    await expect(api.get("/test-bad", Schema)).rejects.toThrow();
+    await expect(api.get("/test-bad", Schema)).rejects.toThrow(z.ZodError);
   });
 
   it("sends a JSON content-type and body on POST", async () => {

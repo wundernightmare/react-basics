@@ -39,7 +39,7 @@ pnpm install            # deps (run once per worktree; ./wt does it for you)
 pnpm dev                # Vite dev server → http://localhost:5173
 VITE_ENABLE_MOCKS=true pnpm dev   # run fully against MSW, no backend
 
-pnpm check              # typecheck (tsgo) + oxlint + oxfmt --check  ← gate before commit
+pnpm check              # typecheck (tsc) + oxlint + oxfmt --check  ← gate before commit
 pnpm test:run           # Vitest: node + jsdom projects (single run) — the CI path
 pnpm test:node          # only node project   pnpm test:jsdom   # only jsdom project
 pnpm test:browser       # Vitest browser mode in real Chromium (Playwright), opt-in
