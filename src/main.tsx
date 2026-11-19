@@ -6,7 +6,7 @@ import { App } from "./app";
 const root = document.getElementById("root");
 if (!root) throw new Error("Root element not found");
 
-async function bootstrap() {
+async function bootstrap(container: HTMLElement) {
   // Optional in-browser mocking: `VITE_ENABLE_MOCKS=true pnpm dev` starts the
   // MSW worker so the app runs entirely against the in-memory fixtures — no
   // backend required. Never honoured in a production build.
@@ -14,15 +14,19 @@ async function bootstrap() {
     import.meta.env.MODE !== "production" && import.meta.env.VITE_ENABLE_MOCKS === "true";
 
   if (enableMocks) {
-    const { worker } = await import("@app/testing/mocks/worker");
-    await worker.start({ quiet: true, onUnhandledFrame: "bypass" });
+    try {
+      const { worker } = await import("@app/testing/mocks/worker");
+      await worker.start({ quiet: true, onUnhandledFrame: "bypass" });
+    } catch (error) {
+      console.error("Failed to start MSW", error);
+    }
   }
 
-  createRoot(root!).render(
+  createRoot(container).render(
     <StrictMode>
       <App />
     </StrictMode>,
   );
 }
 
-void bootstrap();
+void bootstrap(root);

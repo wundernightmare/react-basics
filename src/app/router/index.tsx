@@ -7,7 +7,7 @@ import { RouteErrorFallback } from "./route-error-fallback";
 
 // ─── Lazy-loaded pages ────────────────────────────────────────────────────────
 // Each page is its own chunk. `lazy` returns `{ Component }` per the React
-// Router v7 object-route API.
+// Router v8 object-route API.
 
 const lazyHome = async () => {
   const { HomePage } = await import("@pages/home");

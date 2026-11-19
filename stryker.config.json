@@ -3,7 +3,7 @@
   "packageManager": "pnpm",
   "reporters": ["html", "clear-text", "progress"],
   "htmlReporter": {
-    "baseDir": "reports/mutation"
+    "fileName": "reports/mutation/mutation.html"
   },
   "testRunner": "vitest",
   "coverageAnalysis": "perTest",
@@ -13,6 +13,7 @@
     "!src/**/*.spec.{ts,tsx}",
     "!src/app/testing/**",
     "!src/locales/**",
+    "!src/shared/i18n/index.ts",
     "!src/main.tsx",
     "!src/vite-env.d.ts"
   ]

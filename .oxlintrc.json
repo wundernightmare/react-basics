@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxlint/configuration_schema.json",
-  "plugins": ["react", "react-hooks"],
+  "plugins": ["react", "react-hooks", "jsx-a11y", "import", "promise", "vitest"],
+  "ignorePatterns": ["src/locales/**/messages.ts"],
   "categories": {
     "correctness": "error",
     "suspicious": "error",
@@ -17,7 +18,9 @@
     "max-lines-per-function": "off",
     "react-in-jsx-scope": "off",
     "no-underscore-dangle": "off",
-    "react/no-unstable-nested-components": "off"
+    "react/no-unstable-nested-components": "off",
+    "import/no-unassigned-import": "off",
+    "jsx-a11y/prefer-tag-over-role": "off"
   },
   "overrides": [
     {

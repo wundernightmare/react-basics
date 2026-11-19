@@ -15,16 +15,24 @@ msgstr "Vite + React, слои Feature-Sliced Design, TanStack Query, Zod-вал
 msgid "В работе"
 msgstr "В работе"
 
-#: src/entities/task/ui/task-item.tsx:39
+#: src/entities/task/ui/task-item.tsx:40
 msgid "Вернуть"
 msgstr "Вернуть"
 
-#: src/widgets/app-shell/ui/shell.tsx:59
+#: src/entities/task/ui/task-item.tsx:37
+msgid "Вернуть задачу"
+msgstr "Вернуть задачу"
+
+#: src/entities/task/ui/task-item.tsx:37
+msgid "Выполнить задачу"
+msgstr "Выполнить задачу"
+
+#: src/widgets/app-shell/ui/shell.tsx:61
 msgid "Главная"
 msgstr "Главная"
 
 #: src/entities/task/ui/status-badge.tsx:22
-#: src/entities/task/ui/task-item.tsx:39
+#: src/entities/task/ui/task-item.tsx:40
 msgid "Готово"
 msgstr "Готово"
 
@@ -37,7 +45,7 @@ msgid "Загрузка…"
 msgstr "Загрузка…"
 
 #: src/pages/tasks/index.tsx:27
-#: src/widgets/app-shell/ui/shell.tsx:62
+#: src/widgets/app-shell/ui/shell.tsx:64
 msgid "Задачи"
 msgstr "Задачи"
 
@@ -45,7 +53,7 @@ msgstr "Задачи"
 msgid "К выполнению"
 msgstr "К выполнению"
 
-#: src/app/router/route-error-fallback.tsx:28
+#: src/app/router/route-error-fallback.tsx:30
 #: src/pages/not-found/index.tsx:16
 msgid "На главную"
 msgstr "На главную"
@@ -57,6 +65,10 @@ msgstr "Название задачи"
 #: src/pages/home/index.tsx:27
 msgid "Перейти к задачам"
 msgstr "Перейти к задачам"
+
+#: src/widgets/app-shell/ui/shell.tsx:21
+msgid "Переключить тему"
+msgstr "Переключить тему"
 
 #: src/pages/tasks/index.tsx:44
 msgid "Повторить"
@@ -70,9 +82,17 @@ msgstr "Пока нет задач — добавьте первую."
 msgid "Пример CRUD: данные приходят из MSW-моков в режиме разработки и тестов."
 msgstr "Пример CRUD: данные приходят из MSW-моков в режиме разработки и тестов."
 
+#: src/widgets/app-shell/ui/shell.tsx:36
+msgid "Сменить язык"
+msgstr "Сменить язык"
+
 #: src/pages/not-found/index.tsx:12
 msgid "Страница не найдена"
 msgstr "Страница не найдена"
+
+#: src/entities/task/ui/task-item.tsx:48
+msgid "Удалить задачу"
+msgstr "Удалить задачу"
 
 #: src/features/create-task/ui/create-task-form.tsx:38
 msgid "Что нужно сделать?"

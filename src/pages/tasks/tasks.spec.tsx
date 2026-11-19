@@ -39,7 +39,7 @@ describe("TasksPage", () => {
 
     const todo = await screen.findByText("Написать первый тест");
     const row = todo.closest("li")!;
-    await user.click(within(row).getByRole("button", { name: "complete" }));
+    await user.click(within(row).getByRole("button", { name: "Выполнить задачу" }));
 
     await waitFor(() => {
       expect(within(row).getByText("Готово", { selector: "span" })).toBeInTheDocument();
@@ -52,7 +52,7 @@ describe("TasksPage", () => {
 
     const target = await screen.findByText("Запустить pnpm dev");
     const row = target.closest("li")!;
-    await user.click(within(row).getByRole("button", { name: "delete" }));
+    await user.click(within(row).getByRole("button", { name: "Удалить задачу" }));
 
     await waitFor(() => {
       expect(screen.queryByText("Запустить pnpm dev")).not.toBeInTheDocument();

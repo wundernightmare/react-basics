@@ -9,13 +9,13 @@ wires every layer together so you can delete it and start your own.
 
 | Concern        | Choice                                                            |
 | -------------- | ----------------------------------------------------------------- |
-| Build / dev    | **Vite 8** + `@vitejs/plugin-react-swc`                           |
-| Language       | **TypeScript** (strict), `tsgo` for typecheck                     |
+| Build / dev    | **Vite 8** + `@vitejs/plugin-react`                               |
+| Language       | **TypeScript** (strict), `tsc` for typecheck                      |
 | UI             | **React 19**, React Router 7, Tailwind CSS 4                      |
 | Data           | **TanStack Query** + a Zod-validated `fetch` client               |
 | Forms          | React Hook Form + Zod resolver                                    |
 | State          | Zustand (persisted theme store)                                   |
-| i18n           | **Lingui** (`ru` source + `en`), SWC macro transform              |
+| i18n           | **Lingui** (`ru` source + `en`), Babel macro transform            |
 | Lint / format  | **oxlint** (type-aware) + **oxfmt**                               |
 | Unit/integration | **Vitest** — `node` (pure logic) + `jsdom` (DOM) projects, **MSW** |
 | Browser tests  | **Vitest browser mode** + **Playwright** (Chromium), opt-in       |
@@ -142,7 +142,7 @@ never downloads Chromium. Browser specs render with
 
 ## Container & deployment
 
-A two-stage `Dockerfile` builds the bundle (node 24 LTS + pnpm) and serves it from a
+A two-stage `Dockerfile` builds the bundle (node 26 LTS + pnpm) and serves it from a
 minimal, **non-root** `nginx-unprivileged` image (~52 MB) with SPA fallback,
 gzip, long-cache for hashed assets and a `/healthz` probe.
 
