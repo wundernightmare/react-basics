@@ -29,7 +29,7 @@ workflow:
     - if: '$CI_PIPELINE_SOURCE == "schedule"'
 
 default:
-  image: node:24-trixie-slim
+  image: node:26-trixie-slim
   cache:
     key:
       files:

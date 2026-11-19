@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1
 
 # ── Stage 1: build the static bundle ──────────────────────────────────────────
-FROM node:24-trixie-slim AS builder
+FROM node:26-trixie-slim AS builder
 WORKDIR /app
 ENV CI=true
 
